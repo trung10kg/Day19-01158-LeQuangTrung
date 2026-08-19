@@ -85,7 +85,14 @@ def percentile(values: list[float], p: float) -> float:
     return sorted(values)[min(int(n * p), n - 1)]
 
 
-def benchmark_mode(mode: str, reps: int = 2) -> dict[str, float]:
+def benchmark_mode(mode: str, reps: int = 2, warmup: int = 10) -> dict[str, float]:
+    # ONNX runtime's thread pool + memory arena only reach steady-state after
+    # a handful of calls; without this, semantic/hybrid P99 is dominated by
+    # cold-start cost rather than the model's actual per-query latency (see
+    # README troubleshooting: "NB3 P99 > 50ms -- chạy 10 query warmup trước").
+    for q in golden[:warmup]:
+        httpx.get(f"{URL}/search", params={"q": q["query"], "mode": mode})
+
     server_latencies: list[float] = []
     wall_latencies: list[float] = []
     for _ in range(reps):

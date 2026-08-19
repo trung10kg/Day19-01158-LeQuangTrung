@@ -183,9 +183,12 @@ else:
 
 # %%
 import pandas as pd
+# Query timestamps must be >= each user's own feature event_timestamp
+# (NOW - 1h/2h/3h for u_001/u_002/u_003 respectively -- see make_user_profile
+# above), otherwise the PIT join correctly excludes the row as a future leak.
 entity_df = pd.DataFrame({
     "user_id": ["u_001", "u_002", "u_003"],
-    "event_timestamp": [NOW - timedelta(hours=2), NOW - timedelta(hours=1), NOW],
+    "event_timestamp": [NOW - timedelta(minutes=30), NOW - timedelta(minutes=15), NOW],
 })
 
 historical = fs.get_historical_features(

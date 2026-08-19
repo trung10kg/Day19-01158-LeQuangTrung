@@ -4,6 +4,12 @@
 
 set -euo pipefail
 
+# Windows consoles default stdout/stderr to the system codepage (e.g. cp1252),
+# which can't encode the Vietnamese text and Unicode arrows these scripts
+# print. Force UTF-8 I/O; no-op on Linux/macOS, which already default to it.
+export PYTHONIOENCODING=UTF-8
+export PYTHONUTF8=1
+
 echo "[lite] Day 19 lightweight setup"
 echo "[lite] Stack: fastembed + qdrant-client[memory] + rank-bm25 + feast(sqlite) + FastAPI"
 echo
@@ -44,10 +50,13 @@ if command -v uv >/dev/null 2>&1; then
     uv pip install -r requirements.txt
   fi
 else
-  pip install -q -U pip
-  pip install -q -r requirements.txt
+  # `pip install -U pip` (not `python -m pip`) fails on Windows: pip can't
+  # overwrite its own pip.exe while it's the running process. `python -m pip`
+  # avoids that lock and works identically on Linux/macOS.
+  python -m pip install -q -U pip
+  python -m pip install -q -r requirements.txt
   if [ "$NEED_DILL_OVERRIDE" = "1" ]; then
-    pip install -q --upgrade 'dill>=0.4,<1.0'
+    python -m pip install -q --upgrade 'dill>=0.4,<1.0'
   fi
 fi
 

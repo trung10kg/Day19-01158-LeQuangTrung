@@ -1,6 +1,12 @@
 ## Day 19 — Vector Store + Feature Store lab.
 ## Two paths: lightweight (default, no Docker) and full Docker.
 
+# Windows consoles default to the system codepage (e.g. cp1252), which can't
+# encode the Vietnamese text and Unicode arrows these scripts print. Force
+# UTF-8 I/O; no-op on Linux/macOS, which already default to it.
+export PYTHONIOENCODING := UTF-8
+export PYTHONUTF8 := 1
+
 VENV     := .venv
 PY       := $(VENV)/bin/python
 PIP      := $(VENV)/bin/pip
